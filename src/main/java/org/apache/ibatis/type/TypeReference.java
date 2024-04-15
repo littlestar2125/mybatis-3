@@ -33,6 +33,50 @@ public abstract class TypeReference<T> {
     rawType = getSuperclassTypeParameter(getClass());
   }
 
+
+  /**
+   * 提供的代码是Apache iBatis库中`TypeReference`类的一个方法。这个方法叫做`getSuperclassTypeParameter`，它接收一个`Class<?>`对象作为参数。这个方法的目的是获取泛型超类的类型参数。
+   *
+   * 首先，方法通过在提供的`Class<?>`对象上调用`getGenericSuperclass()`来获取直接超类的`Type`。这个`Type`被存储在`genericSuperclass`变量中。
+   *
+   * ```java
+   * Type genericSuperclass = clazz.getGenericSuperclass();
+   * ```
+   *
+   * 接下来，方法检查`genericSuperclass`是否是`Class`的实例。如果是，那么意味着超类不是一个参数化类型（即，它不是一个泛型类），所以方法试图向上爬升类层次结构以找到一个泛型超类。
+   *
+   * ```java
+   * if (genericSuperclass instanceof Class) {
+   *   // try to climb up the hierarchy until meet something useful
+   *   if (TypeReference.class != genericSuperclass) {
+   *     return getSuperclassTypeParameter(clazz.getSuperclass());
+   *   }
+   * ```
+   *
+   * 如果超类是`TypeReference`但它没有参数化，那么方法会抛出一个`TypeException`。
+   *
+   * ```java
+   * throw new TypeException("'" + getClass() + "' extends TypeReference but misses the type parameter. "
+   *   + "Remove the extension or add a type parameter to it.");
+   * ```
+   *
+   * 如果`genericSuperclass`不是`Class`的实例，那么意味着它是一个参数化类型（即，它是一个泛型类）。在这种情况下，方法获取`genericSuperclass`的实际类型参数，并将第一个存储在`rawType`变量中。
+   *
+   * ```java
+   * Type rawType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
+   * ```
+   *
+   * 如果`rawType`也是一个`ParameterizedType`，那么方法获取它的原始类型。
+   *
+   * ```java
+   * if (rawType instanceof ParameterizedType) {
+   *   rawType = ((ParameterizedType) rawType).getRawType();
+   * }
+   * ```
+   *
+   * 最后，方法返回`rawType`，它代表了泛型超类的类型参数。
+   * @return
+   */
   Type getSuperclassTypeParameter(Class<?> clazz) {
     Type genericSuperclass = clazz.getGenericSuperclass();
     if (genericSuperclass instanceof Class) {
@@ -53,6 +97,8 @@ public abstract class TypeReference<T> {
 
     return rawType;
   }
+
+
 
   public final Type getRawType() {
     return rawType;

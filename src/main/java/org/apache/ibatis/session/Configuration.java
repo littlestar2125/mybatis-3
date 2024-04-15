@@ -177,8 +177,11 @@ public class Configuration {
   // 代理工厂  --对cglib  和      jdk代理的实现
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
+  // 数据库id
   protected String databaseId;
   /**
+   * 配置工厂类。用于创建用于加载反序列化未读属性的配置
+   *
    * Configuration factory class.
    * Used to create Configuration for loading deserialized unread properties.
    *
@@ -186,8 +189,13 @@ public class Configuration {
    */
   protected Class<?> configurationFactory;
 
+  //这个是Mapper的缓存对象 -- 缓存Mapper类及对应的代理
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
+
+  //拦截器链
   protected final InterceptorChain interceptorChain = new InterceptorChain();
+
+  //类型处理器注册器
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
