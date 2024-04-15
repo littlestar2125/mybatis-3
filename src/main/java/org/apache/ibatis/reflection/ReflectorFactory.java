@@ -15,11 +15,31 @@
  */
 package org.apache.ibatis.reflection;
 
+/**
+ * 反射对象工厂接口，定义反射对象的工厂
+ */
 public interface ReflectorFactory {
 
+  /**
+   * 是否启用类缓存
+   * 默认启用
+   *
+   * @return 是否启用类缓存
+   */
   boolean isClassCacheEnabled();
 
+  /**
+   * 设置是否启用类缓存
+   *
+   * @param classCacheEnabled 是否启用类缓存
+   */
   void setClassCacheEnabled(boolean classCacheEnabled);
 
+  /**
+   * 查找类的反射对象
+   *
+   * @param type 类
+   * @return 反射对象
+   */
   Reflector findForClass(Class<?> type);
 }

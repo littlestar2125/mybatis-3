@@ -48,19 +48,24 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   @SuppressWarnings("unchecked")
   @Override
   public <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
+    //解决接口类型      若是Map则返回HashMap，若是List,Collection,Iterable返回ArrayList,SortedSet返回TreeSet,Set返回HashSet,否则返回tyoe
     Class<?> classToCreate = resolveInterface(type);
     // we know types are assignable
     return (T) instantiateClass(classToCreate, constructorArgTypes, constructorArgs);
   }
 
-  private  <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
+  private <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     try {
       Constructor<T> constructor;
+      //首先若构造器参数类型 和构造器参数任一为空，那么说明是无参构造器
       if (constructorArgTypes == null || constructorArgs == null) {
+        // q:what Class.getConstructor returns if no params
+        // a: it returns the constructor with no params
         constructor = type.getDeclaredConstructor();
         try {
           return constructor.newInstance();
         } catch (IllegalAccessException e) {
+          //若构造器不可访问，则判断是否可以控制访问权限，若可以则设置为可访问，否则抛出异常
           if (Reflector.canControlMemberAccessible()) {
             constructor.setAccessible(true);
             return constructor.newInstance();
@@ -69,7 +74,11 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
           }
         }
       }
+      //若构造器参数类型和构造器参数都不为空，那么说明是有参构造器
+      //将构造器参数传进去，获取构造器
       constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[0]));
+
+      //这里和上一步一样，只是传入了参数
       try {
         return constructor.newInstance(constructorArgs.toArray(new Object[0]));
       } catch (IllegalAccessException e) {
@@ -81,10 +90,11 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
         }
       }
     } catch (Exception e) {
+      //这里出现问题一般是因为构造器参数类型和构造器参数不匹配，将参数打印出来
       String argTypes = Optional.ofNullable(constructorArgTypes).orElseGet(Collections::emptyList)
-          .stream().map(Class::getSimpleName).collect(Collectors.joining(","));
+        .stream().map(Class::getSimpleName).collect(Collectors.joining(","));
       String argValues = Optional.ofNullable(constructorArgs).orElseGet(Collections::emptyList)
-          .stream().map(String::valueOf).collect(Collectors.joining(","));
+        .stream().map(String::valueOf).collect(Collectors.joining(","));
       throw new ReflectionException("Error instantiating " + type + " with invalid types (" + argTypes + ") or values (" + argValues + "). Cause: " + e, e);
     }
   }
