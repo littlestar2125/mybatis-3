@@ -78,6 +78,7 @@ import java.util.function.BiFunction;
 
 /**
  * mybatis 最核心的配置信息类
+ *
  * @author Clinton Begin
  * todo 配置中具体项对应关系
  */
@@ -181,7 +182,7 @@ public class Configuration {
   protected String databaseId;
   /**
    * 配置工厂类。用于创建用于加载反序列化未读属性的配置
-   *
+   * <p>
    * Configuration factory class.
    * Used to create Configuration for loading deserialized unread properties.
    *
@@ -197,18 +198,29 @@ public class Configuration {
 
   //类型处理器注册器
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
+
+  //类型别名注册器
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+
+  //解析xml等转成sql语句的注册器
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
+
 
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
     .conflictMessageProducer((savedValue, targetValue) ->
       ". please check " + savedValue.getResource() + " and " + targetValue.getResource());
+
+
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
+
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
+
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
+
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
   protected final Set<String> loadedResources = new HashSet<>();
+
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
@@ -1010,6 +1022,15 @@ public class Configuration {
     }
   }
 
+  /**
+   * 一个Map类,增加了名称属性及不允许重复的校验
+   * 若增加了一个key已存在会抛出异常
+   * 若增加了一个嵌套key  例如： a.b c.b  获取b会抛出异常
+   * <p>
+   * Test {@see src.test.java.org.apache.ibatis.session.StrictMapTest.java}
+   *
+   * @param <V>
+   */
   protected static class StrictMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = -4950446264854982944L;
@@ -1081,6 +1102,9 @@ public class Configuration {
       return value;
     }
 
+    /**
+     * 一个标识类，标识有重复的嵌套属性
+     */
     protected static class Ambiguity {
       private final String subject;
 
